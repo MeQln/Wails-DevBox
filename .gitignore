@@ -1,0 +1,11 @@
+build/bin/
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+.DS_Store
+.claude/
+# go build 副产物（根目录二进制）
+/DevBox
+# wails build 从 build/appicon.png 自动生成的平台图标
+build/darwin/icon.icns
+build/windows/icon.ico

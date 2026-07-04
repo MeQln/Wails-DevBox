@@ -1,0 +1,20 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "DevBox",
+  "outputfilename": "DevBox",
+  "frontend:install": "pnpm install",
+  "frontend:build": "pnpm run build",
+  "frontend:dev:watcher": "pnpm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "MeQln",
+    "email": ""
+  },
+  "info": {
+    "companyName": "DevBox",
+    "productName": "DevBox",
+    "productVersion": "0.1.0",
+    "copyright": "Copyright © 2026 MeQln",
+    "comments": "DevBox · 开发工具箱"
+  }
+}
