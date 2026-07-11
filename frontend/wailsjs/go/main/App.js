@@ -34,6 +34,18 @@ export function HashText(arg1) {
   return window['go']['main']['App']['HashText'](arg1);
 }
 
+export function ImageCompress(arg1, arg2, arg3) {
+  return window['go']['main']['App']['ImageCompress'](arg1, arg2, arg3);
+}
+
+export function ImageConvert(arg1, arg2, arg3) {
+  return window['go']['main']['App']['ImageConvert'](arg1, arg2, arg3);
+}
+
+export function ImageRead(arg1) {
+  return window['go']['main']['App']['ImageRead'](arg1);
+}
+
 export function KillPort(arg1) {
   return window['go']['main']['App']['KillPort'](arg1);
 }

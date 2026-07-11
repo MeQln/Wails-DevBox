@@ -36,6 +36,26 @@ export namespace main {
 	        this.sha512 = source["sha512"];
 	    }
 	}
+	export class ImageInfo {
+	    width: number;
+	    height: number;
+	    format: string;
+	    size_bytes: number;
+	    data_base64: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ImageInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.width = source["width"];
+	        this.height = source["height"];
+	        this.format = source["format"];
+	        this.size_bytes = source["size_bytes"];
+	        this.data_base64 = source["data_base64"];
+	    }
+	}
 	export class PasswordOptions {
 	    length: number;
 	    upper: boolean;

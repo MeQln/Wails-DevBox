@@ -18,6 +18,12 @@ export function HashFile(arg1:string):Promise<main.HashResult>;
 
 export function HashText(arg1:string):Promise<main.HashResult>;
 
+export function ImageCompress(arg1:string,arg2:number,arg3:string):Promise<main.ImageInfo>;
+
+export function ImageConvert(arg1:string,arg2:string,arg3:string):Promise<main.ImageInfo>;
+
+export function ImageRead(arg1:string):Promise<main.ImageInfo>;
+
 export function KillPort(arg1:number):Promise<void>;
 
 export function ListPorts():Promise<Array<main.PortEntry>>;

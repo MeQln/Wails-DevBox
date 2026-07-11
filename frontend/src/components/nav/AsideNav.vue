@@ -1,5 +1,5 @@
 <template>
-  <aside class="aside grid grid-rows-[auto_1fr_auto] bg-aside border-r border-rule min-w-0 min-h-0">
+  <aside class="aside grid grid-rows-[auto_1fr_auto] border-r border-rule min-w-0 min-h-0">
     <div class="search p-2">
       <div class="search-box">
         <svg class="search-ico" viewBox="0 0 24 24" width="14" height="14"
@@ -66,22 +66,26 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
 </script>
 
 <style scoped>
+.aside {
+  background: linear-gradient(180deg, var(--aside-top), var(--aside));
+  --rule: var(--border-accent);
+}
 .search-box {
   display: flex;
   align-items: center;
   gap: 6px;
   height: 32px;
   padding: 0 8px;
-  background: var(--surface);
-  border: 1px solid var(--rule);
+  background: transparent;
+  border: 1px solid var(--aside-2);
   border-radius: var(--r-md);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .search-box:focus-within {
-  border-color: var(--ink-5);
+  border-color: var(--aside-3);
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
 }
-.search-ico { color: var(--ink-4); flex-shrink: 0; }
+.search-ico { color: var(--ink-3); flex-shrink: 0; }
 .search-box input {
   flex: 1;
   min-width: 0;

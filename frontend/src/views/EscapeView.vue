@@ -1,6 +1,6 @@
 <template>
   <header class="page-head">
-    <h1>JSON 格式化工具</h1>
+    <h1>转义 / 反转义工具</h1>
   </header>
 
   <div class="section-title"><span>配置</span></div>
@@ -12,33 +12,32 @@
         </svg>
       </span>
       <div>
-        <div class="row-title">转换</div>
-        <div class="row-desc">选择你要使用的转换模式</div>
+        <div class="row-title">转换模式</div>
+        <div class="row-desc">选择转义或反转义</div>
       </div>
-      <Switch v-model="isFormat" on-label="格式化" off-label="压缩" />
+      <Switch v-model="isEscape" on-label="转义" off-label="反转义" />
     </div>
 
     <div class="row">
       <span class="row-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M8 3H6a2 2 0 00-2 2v14a2 2 0 002 2h2" />
-          <path d="M16 3h2a2 2 0 012 2v14a2 2 0 01-2 2h-2" />
+          <path d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </span>
       <div>
-        <div class="row-title">缩进</div>
-        <div class="row-desc">格式化时使用的缩进宽度（压缩模式下无效）</div>
+        <div class="row-title">转义类型</div>
+        <div class="row-desc">HTML 实体、Unicode 或 JSON 字符串转义</div>
       </div>
-      <Switch v-model="indent4" on-label="4 空格" off-label="2 空格" />
+      <div class="type-group">
+        <button v-for="t in types" :key="t.key"
+          :class="['type-btn', { active: type === t.key }]"
+          @click="type = t.key">{{ t.label }}</button>
+      </div>
     </div>
   </div>
 
   <div class="section-title">
-    <span class="section-head">
-       输入
-       <span v-if="input.trim() && isValid" class="badge badge-ok">有效</span>
-       <span v-if="input.trim() && !isValid" class="badge badge-err">无效</span>
-     </span>
+    <span>输入</span>
     <div class="section-actions">
       <PillBtn icon-only title="粘贴" @click="pasteInput">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -72,7 +71,6 @@
       </PillBtn>
     </div>
   </div>
-  <div v-if="error" class="error-bar">{{ error }}</div>
   <CodeArea v-model="output" readonly class="flex-1" />
 </template>
 
@@ -86,41 +84,107 @@ import { clipboardApi } from '@/api/clipboard'
 import { openDialog } from '@/api/dialog'
 import { readTextFile } from '@/api/fs'
 
-const isFormat = ref(true)
-const indent4  = ref(false)
-const input  = ref('')
-const output = ref('')
-const error  = ref('')
-const isValid = ref(true) // 无输入时视为有效
+type EscapeType = 'html' | 'unicode' | 'json'
+
+const types: { key: EscapeType; label: string }[] = [
+  { key: 'html',    label: 'HTML' },
+  { key: 'unicode', label: 'Unicode' },
+  { key: 'json',    label: 'JSON' },
+]
+
+const isEscape = ref(true)
+const type     = ref<EscapeType>('html')
+const input    = ref('')
+const output   = ref('')
 
 const message = useMessage()
 
-let lastValid = ''
-let lastConfig = '' // 记录 lastValid 时的配置
+// 转义函数集
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
 
-watch([input, isFormat, indent4], ([t, fmt, i4]) => {
-  const configKey = `${fmt}:${i4}`
-  const text = t.trim()
-  if (!text) { output.value = ''; error.value = ''; isValid.value = true; return }
-  try {
-    const parsed = JSON.parse(text)
-    // 仅接受对象 {} 或数组 []，拒绝数字/字符串/布尔/null 等原始值
-    if (typeof parsed !== 'object' || parsed === null) {
-      throw new Error('仅支持 JSON 对象或数组')
+function unescapeHtml(s: string): string {
+  return s
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&gt;/g, '>')
+    .replace(/&lt;/g, '<')
+    .replace(/&amp;/g, '&')
+}
+
+function escapeUnicode(s: string): string {
+  let out = ''
+  for (const ch of s) {
+    const cp = ch.codePointAt(0)!
+    if (cp > 127 || cp < 32) {
+      if (cp > 0xFFFF) {
+        // 增补平面字符使用代理对 \uDxxx\uDxxx
+        const hi = Math.floor((cp - 0x10000) / 0x400) + 0xD800
+        const lo = (cp - 0x10000) % 0x400 + 0xDC00
+        out += '\\u' + hi.toString(16).toUpperCase() + '\\u' + lo.toString(16).toUpperCase()
+      } else {
+        out += '\\u' + cp.toString(16).toUpperCase().padStart(4, '0')
+      }
+    } else {
+      out += ch
     }
-    output.value = fmt
-      ? JSON.stringify(parsed, null, i4 ? 4 : 2)
-      : JSON.stringify(parsed)
-    lastValid = output.value
-    lastConfig = configKey
-    error.value = ''
-    isValid.value = true
-  } catch (e) {
-    // 配置变更后缓存失效，不应展示旧格式的输出
-    output.value = configKey === lastConfig ? lastValid : ''
-    error.value = (e as Error).message
-    isValid.value = false
   }
+  return out
+}
+
+function unescapeUnicode(s: string): string {
+  return s
+    .replace(/\\u([0-9A-Fa-f]{4})/g, (_, hex) =>
+      String.fromCharCode(parseInt(hex, 16))
+    )
+}
+
+function escapeJson(s: string): string {
+  return s
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t')
+    .replace(/\f/g, '\\f')
+    .replace(/\b/g, '\\b')
+}
+
+function unescapeJson(s: string): string {
+  // 单次遍历处理所有转义序列，避免顺序替换的 `\n` 与 `\\n` 冲突
+  return s.replace(/\\(["\\/bfnrt]|u[0-9A-Fa-f]{4})/g, (_, seq: string) => {
+    switch (seq) {
+      case '\\': return '\\'
+      case '"':  return '"'
+      case '/':  return '/'
+      case 'b':  return '\b'
+      case 'f':  return '\f'
+      case 'n':  return '\n'
+      case 'r':  return '\r'
+      case 't':  return '\t'
+      default:
+        if (seq.startsWith('u')) return String.fromCharCode(parseInt(seq.slice(1), 16))
+        return _
+    }
+  })
+}
+
+function transform(text: string, doEscape: boolean, t: EscapeType): string {
+  if (!text) return ''
+  if (t === 'html')    return doEscape ? escapeHtml(text) : unescapeHtml(text)
+  if (t === 'unicode') return doEscape ? escapeUnicode(text) : unescapeUnicode(text)
+  if (t === 'json')    return doEscape ? escapeJson(text) : unescapeJson(text)
+  return text
+}
+
+watch([input, isEscape, type], ([t, esc, tp]) => {
+  output.value = transform(t, esc, tp)
 }, { immediate: true })
 
 function clearInput() {
@@ -130,7 +194,7 @@ function clearInput() {
 async function readInput() {
   const path = await openDialog({
     multiple: false,
-    filters: [{ name: 'JSON 文件', extensions: ['json', 'txt'] }],
+    filters: [{ name: '文本文件', extensions: ['txt'] }],
   })
   if (typeof path !== 'string') return
   try {
@@ -186,14 +250,14 @@ async function copyOutput() {
 .section-actions { display: flex; gap: 4px; }
 
 .config {
-  background: transparent;
+  background: color-mix(in srgb, var(--aside-2) 6%, var(--card-2));
+  border: 1px solid var(--border-accent);
   border-radius: var(--r-md);
   padding: 6px;
   display: flex; flex-direction: column; gap: 4px;
 }
 .row {
-  background: transparent;
-  border: 1px solid var(--border-accent);
+  background: var(--card-2);
   border-radius: 8px;
   padding: 14px 16px;
   min-height: 64px;
@@ -210,26 +274,20 @@ async function copyOutput() {
 .row-title { font-size: 14px; font-weight: 500; }
 .row-desc { font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
 
-.section-head { display: flex; align-items: center; gap: 8px; }
-
-.badge {
-  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
-  letter-spacing: 0.02em;
+.type-group {
+  display: flex; gap: 2px;
+  background: color-mix(in srgb, var(--aside-2) 12%, transparent);
+  border-radius: 6px; padding: 2px;
 }
-.badge-ok  { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
-.badge-err { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); }
-
-.error-bar {
-  background: color-mix(in srgb, var(--warn) 8%, transparent);
-  color: var(--warn);
-  border-left: 3px solid var(--warn);
-  border-radius: var(--r-sm);
-  padding: 8px 12px;
-  font-family: var(--mono);
-  font-size: 12.5px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-all;
-  margin-bottom: 12px;
+.type-btn {
+  padding: 4px 12px; border: none; border-radius: 4px;
+  background: transparent; color: var(--ink-2);
+  font-size: 12.5px; cursor: pointer;
+  transition: all .15s;
 }
+.type-btn.active {
+  background: var(--card-2); color: var(--ink);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+.type-btn:hover:not(.active) { color: var(--ink); }
 </style>
