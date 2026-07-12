@@ -15,11 +15,12 @@ func main() {
 	app := NewApp()
 
 	err := wails.Run(&options.App{
-		Title:     "DevBox · 开发工具箱",
-		Width:     1100,
-		Height:    760,
-		MinWidth:  880,
-		MinHeight: 600,
+		Title:             "DevBox · 开发工具箱",
+		Width:             1100,
+		Height:            760,
+		MinWidth:          880,
+		MinHeight:         600,
+		HideWindowOnClose: true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

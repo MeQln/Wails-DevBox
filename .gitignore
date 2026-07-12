@@ -1,5 +1,6 @@
 build/bin/
 build/darwin/*.icns
+build/darwin/Info.plist
 node_modules/
 frontend/dist/
 *.tsbuildinfo

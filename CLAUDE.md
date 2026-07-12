@@ -28,6 +28,14 @@ go test ./...                                # Go 后端单测（URL/Base64/Hash
 
 **没有** ESLint / Prettier / Vitest / Playwright — 这是 spec 明确禁止的（YAGNI），不要新增。
 
+## 构建策略
+
+**仅构建当前平台（macOS/darwin），不交叉编译。**
+
+- `wails build` 只在 macOS 上构建 macOS `.app` 包，不做 `-platform windows/amd64` 等交叉编译。
+- 修改了 `tools_kill_windows.go` 等仅 Windows 平台相关的代码时，不要求在 macOS 上编译验证 —— 平台相关代码通过 Go build tags（`//go:build windows` / `//go:build darwin`）隔离，在 macOS 上本就不会编译。
+- 如需验证 Windows 端修改，依赖 CI 或手动在 Windows 上 `wails build`。
+
 ## 架构概览
 
 ### 前后端分工
@@ -67,6 +75,16 @@ go test ./...                                # Go 后端单测（URL/Base64/Hash
 | `tools_image.go` | `ImageRead` / `ImageConvert` / `ImageCompress` |
 
 **新增命令**：在对应 `tools_*.go` 加 `func (a *App) Xxx(...) (...)` 方法，然后 `wails generate module`（或 `wails dev`/`wails build` 会自动）重新生成 `frontend/wailsjs/go/main/App.*` 与 `models.ts`。前端在 `src/api/` 加封装。
+
+### 系统托盘
+
+系统托盘使用 `github.com/getlantern/systray` 实现，通过 `systray.Register`（而非 `Run`）集成到 Wails 主事件循环中，无需独立事件循环。
+
+- **`tray.go`**：`App.initTray(ctx)` 在 `App.startup` 回调中调用，初始化托盘图标、工具提示、菜单项（显示窗口 / 隐藏窗口 / 退出）。
+- **图标**：使用 `build/appicon.png`（与窗口图标相同文件）。
+- **`main.go`**：`HideWindowOnClose: true` 使关闭窗口时隐藏而非退出，符合托盘应用惯例。
+- 菜单点击通过 `MenuItem.ClickedCh` 通道监听，在独立 goroutine 中处理。窗口显示/隐藏使用 `runtime.WindowShow`/`runtime.WindowHide`。
+- 托盘为跨平台行为（macOS + Windows）。macOS 上显示在菜单栏，Windows 上显示在通知区域。
 
 ### 前端交互层映射（从 Tauri 迁移）
 
@@ -157,7 +175,7 @@ vue-router 嵌套在 `AppShell` 之下（`frontend/src/router/index.ts`）。所
 
 ### 第三方依赖
 
-- Go：`github.com/google/uuid`（v4/v7）、`github.com/skip2/go-qrcode`（QR 生成，取模块矩阵手写 SVG）、`github.com/tuotoo/qrcode`（QR 解码）、`github.com/shirou/gopsutil/v3`（端口列表 / 进程名 / 结束进程）、`golang.org/x/image`（bmp/tiff/webp 解码）、标准库 `crypto/*`、`encoding/base64`。
+- Go：`github.com/google/uuid`（v4/v7）、`github.com/skip2/go-qrcode`（QR 生成，取模块矩阵手写 SVG）、`github.com/tuotoo/qrcode`（QR 解码）、`github.com/shirou/gopsutil/v3`（端口列表 / 进程名 / 结束进程）、`golang.org/x/image`（bmp/tiff/webp 解码）、`github.com/getlantern/systray`（系统托盘）、标准库 `crypto/*`、`encoding/base64`。
 - 前端：`marked`（Markdown 渲染）、`sql-formatter`（SQL 格式化）、`naive-ui`、`pinia`、`vue-router`。
 - **已知偏差**：QR 解码库 `tuotoo/qrcode` 与原 Rust `rqrr` 行为可能略有差异；ICO 格式未注册解码器（其他格式 PNG/JPEG/GIF/BMP/TIFF/WEBP 均支持）；WebP 编码暂不支持（`encodeImage` 无 WebP 编码器，前端 `FormatConversionView` 与 `ImageCompressionView` 均未暴露 WebP 选项）；`gopsutil` 在 macOS 获取其他用户进程的 PID 受系统权限限制（与原 netstat2 同样限制）。
 
@@ -172,4 +190,4 @@ vue-router 嵌套在 `AppShell` 之下（`frontend/src/router/index.ts`）。所
 
 ## 不做项（spec 明确禁止）
 
-国际化、自动更新、系统托盘、ESLint / Prettier、前端单测 / E2E。除非用户明确要求引入，否则不要主动加。（暗色主题与配色系统均已实现，不再是禁项。）
+国际化、自动更新、ESLint / Prettier、前端单测 / E2E。除非用户明确要求引入，否则不要主动加。（暗色主题、配色系统、系统托盘均已实现，不再是禁项。）

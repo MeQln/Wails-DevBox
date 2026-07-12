@@ -18,6 +18,7 @@ func NewApp() *App {
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	a.initTray(ctx)
 }
 
 // ReadFile 读取文件原始字节。对应 Tauri plugin-fs 的 readFile。
