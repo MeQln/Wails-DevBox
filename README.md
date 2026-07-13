@@ -1,8 +1,6 @@
 # DevBox · 开发工具箱
 
-本地开发者工具集（DevToys 风格）桌面应用：左侧搜索导航 + 右侧工具页。基于 **Wails v2（Go 后端 + Vue 3 前端）** 构建，支持浅色/深色主题 + 6 色配色系统。
-
-> 本仓库由同工作空间的 Tauri 版（`fs-tauri/DevBox`）迁移而来：前端 UI / 样式 / 路由 / store 整体保留，后端 Rust 命令改写为 Go 方法，前端交互层从 Tauri invoke / plugin 改为 Wails binding / runtime。
+本地开发者工具集（DevToys 风格）桌面应用：左侧搜索导航 + 右侧工具页。基于 **Wails v2（Go 后端 + Vue 3 前端）** 构建，支持浅色/深色主题 + 6 色配色系统（蓝/紫/绿/玫瑰/青/暖色）。
 
 ![DevBox](screenshot.png)
 
@@ -56,9 +54,9 @@ go test ./...                                    # Go 后端单测（对齐原 R
 ```
 
 - **后端**：26 个 `*App` 方法挂在 `App` struct（`app.go` + `tools_*.go`），按工具拆分文件，同 `package main`。新增命令：`tools_url.go` / `base64` / `hash` / `uuid` / `password` / `qrcode` / `port` / `net` / `dialog` / `image`。
-- **前端 API 层** `src/api/*.ts` 是单一调用入口，内部转发到 Wails 生成的 binding，对外签名与原 Tauri 版一致。
+- **前端 API 层** `src/api/*.ts` 是单一调用入口，内部转发到 Wails 生成的 binding。
 - **剪贴板**用 `wailsjs/runtime/runtime` 的 `ClipboardGetText`/`ClipboardSetText`；**文件对话框**由 Go `OpenDialog`/`SaveDialog` binding 包装；**文件读写**由 `ReadFile`/`ReadTextFile`/`WriteFile` binding 提供。
-- **主题与配色**由 `stores/theme.ts` 管理，`<html data-theme>` + `<html data-color>` 切换，`tokens.css` 用 `[data-theme='dark']` 覆盖颜色变量 + `[data-color='xxx']` 提供 6 套配色。Naive UI 在 `App.vue` 按主题传 `darkTheme`。
+- **样式系统**：`tokens.css` 定义 CSS 变量（颜色/圆角/字体），`common.css` 提供基础控件样式（`.btn`/`.input`/`.text-area`/`.config`/`.row` 等），各视图 scoped CSS 处理特有布局。`<html data-theme>` + `<html data-color>` 切换主题与 6 色配色。Naive UI 在 `App.vue` 按主题传 `darkTheme`。
 
 更多架构与约束见 [`CLAUDE.md`](CLAUDE.md)，UI 视觉与交互见 [`DESIGN.md`](DESIGN.md)。
 

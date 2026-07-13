@@ -8,8 +8,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **产品名固定为 DevBox**：`wails.json#name`/`outputfilename`、`package.json#name`、桌面窗口标题 `DevBox · 开发工具箱`、macOS bundle id `com.meqln.devbox` 全部一致。改文案时不要改回 fs-wails / fs-tauri。
 
-> 本仓库由同工作空间的 Tauri 版（`../fs-tauri/DevBox`）迁移而来：前端 UI / 样式 / 路由 / store 整体保留，后端 Rust 命令改写为 Go 方法，前端交互层从 Tauri invoke / plugin 改为 Wails binding / runtime。Go 单测（`backend_test.go`）对齐原 Rust 单测，验证行为等价。
-
 ## 常用命令
 
 ```bash
@@ -78,25 +76,26 @@ go test ./...                                # Go 后端单测（URL/Base64/Hash
 
 ### 系统托盘
 
-系统托盘使用 `github.com/getlantern/systray` 实现，通过 `systray.Register`（而非 `Run`）集成到 Wails 主事件循环中，无需独立事件循环。
+系统托盘使用 CGo + macOS Cocoa API 实现（`tray_darwin.go` + `tray_darwin_helper.go`），通过 `dispatch_async` 在主线程初始化 NSStatusBar。
 
-- **`tray.go`**：`App.initTray(ctx)` 在 `App.startup` 回调中调用，初始化托盘图标、工具提示、菜单项（显示窗口 / 隐藏窗口 / 退出）。
-- **图标**：使用 `build/appicon.png`（与窗口图标相同文件）。
+- **`tray.go`**：`App.initTray(ctx)` 在 `App.startup` 回调中调用，读取 `build/appicon.png` 图标，调用平台 `startTray` 并启动菜单事件分发 goroutine。
+- **`tray_darwin.go`**：darwin 平台实现，`startTray` 将图标数据传给 CGo 层，`startTrayActionHandler` 启动 goroutine 监听 `actionCh` 分发显示/隐藏/退出事件。
+- **`tray_darwin_helper.go`**：CGo + ObjC 实现，用 `dispatch_async` 在主线程创建 `NSStatusItem`、设置图标和菜单。菜单点击通过 `handleTrayAction` 回调发送到 Go channel。
+- **`tray_other.go`**：非 darwin 平台 stub，`startTray` 和 `startTrayActionHandler` 均为空操作，防止 goroutine 泄漏。
 - **`main.go`**：`HideWindowOnClose: true` 使关闭窗口时隐藏而非退出，符合托盘应用惯例。
-- 菜单点击通过 `MenuItem.ClickedCh` 通道监听，在独立 goroutine 中处理。窗口显示/隐藏使用 `runtime.WindowShow`/`runtime.WindowHide`。
-- 托盘为跨平台行为（macOS + Windows）。macOS 上显示在菜单栏，Windows 上显示在通知区域。
+- 托盘为跨平台行为（macOS + Windows）。macOS 菜单栏显示，Windows 通知区域显示（待实现）。
 
-### 前端交互层映射（从 Tauri 迁移）
+### 前端交互层（Wails binding）
 
-| 原 Tauri | 现 Wails |
+| 功能 | 实现 |
 |---|---|
-| `invoke('cmd')` | `wailsjs/go/main/App` 的方法（`api/*.ts` 封装） |
-| `plugin-clipboard-manager` | `wailsjs/runtime/runtime` 的 `ClipboardGetText`/`ClipboardSetText`（`api/clipboard.ts`） |
-| `plugin-dialog` open/save | Go `OpenDialog`/`SaveDialog` binding（`api/dialog.ts` 封装，签名对齐原 open/save） |
-| `plugin-fs` readFile/readTextFile/writeFile | Go `ReadFile`/`ReadTextFile`/`WriteFile` binding（`api/fs.ts` 封装，签名对齐） |
-| `api/event` listen(`ping:line`) | `wailsjs/runtime/runtime` 的 `EventsOn`；Go 端 `runtime.EventsEmit` |
+| 后端命令调用 | `wailsjs/go/main/App` 的方法（`api/*.ts` 封装） |
+| 剪贴板 | `wailsjs/runtime/runtime` 的 `ClipboardGetText`/`ClipboardSetText`（`api/clipboard.ts`） |
+| 文件对话框 | Go `OpenDialog`/`SaveDialog` binding（`api/dialog.ts` 封装） |
+| 文件读写 | Go `ReadFile`/`ReadTextFile`/`WriteFile` binding（`api/fs.ts` 封装） |
+| 事件监听 | `wailsjs/runtime/runtime` 的 `EventsOn`；Go 端 `runtime.EventsEmit` |
 
-**`[]byte` 在 Wails v2 中以 `Array<number>` 传输**（与原 Tauri 一致），前端字节处理逻辑（`Array.from(new Uint8Array(...))` 等）无需改。
+**`[]byte` 在 Wails v2 中以 `Array<number>` 传输**，前端字节处理逻辑无需特殊处理。
 
 ### 工具页一览
 
@@ -116,7 +115,7 @@ go test ./...                                # Go 后端单测（URL/Base64/Hash
 ```
 views
   ├─▶ components/nav (AsideNav / NavGroup / NavItem)
-  ├─▶ components/ui  (Switch / PillBtn / CodeArea)
+  ├─▶ components/ui  (Switch / PillBtn)
   ├─▶ stores/nav     (useNavStore — 导航真源)
   ├─▶ stores/theme   (useThemeStore — 主题 / 明暗 / 配色)
   └─▶ api/*          (Wails binding 封装)
@@ -128,19 +127,20 @@ views
 
 vue-router 嵌套在 `AppShell` 之下（`frontend/src/router/index.ts`）。所有工具页均有具名路由（`/tools/:id`），兜底路由 `/tools/:id` 命中占位页 `PlaceholderView`（通过 `useNavStore.findLabel(id)` 反查工具名，未命中显示「未知工具」）。
 
-### 样式三层
+### 样式分层
 
-- **真源**：`frontend/src/styles/tokens.css`（CSS 变量；颜色 / 圆角 / 字体栈都在这里）。浅色在 `:root`，深色在 `[data-theme='dark']` 覆盖同一组变量。配色通过 `[data-color='blue'|'purple'|'green'|'rose'|'teal']` 选择器切换 5 套 `--aside-top`/`--border-accent`/`--accent`/`--link` 变量。
+- **Token 真源**：`frontend/src/styles/tokens.css`（CSS 变量；颜色 / 圆角 / 字体栈都在这里）。浅色在 `:root`，深色在 `[data-theme='dark']` 覆盖同一组变量。配色通过 `[data-color='blue'|'purple'|'green'|'rose'|'teal'|'warm']` 选择器切换 6 套 `--aside-top`/`--border-accent`/`--accent`/`--link` 变量。
+- **公用组件样式**：`frontend/src/styles/common.css`。包含 `.page-head`、`.section-title`、`.config`/`.row`、`.text-area`、`.input`、`.btn`/`.btn-primary`/`.btn-danger`、`.error-bar`、`.progress-bar` 等基础控件样式。各视图只需引用 class 名，无需重复定义。
 - **Tailwind**：`tailwind.config.ts` 仅暴露**常用子集**（`bg-aside`、`text-ink-2`、`rounded-md` 等）通过 `var(--xxx)` 引用 token；剩余 token 在 scoped CSS 里直接 `var()` 用。
-- **scoped CSS**：仅用于原型自定义元件（Switch 滑动开关、CodeArea gutter、PillBtn）
+- **scoped CSS**：仅用于视图特有布局和自定义元件（Switch 滑动开关、PillBtn 工具按钮）的样式覆盖。
 
-新颜色 / 圆角 / 字体先加到 `tokens.css`（浅深两套 + 5 色配色都要给），再决定是否暴露到 Tailwind。Naive UI 作容器层（`n-config-provider` + `n-message-provider` 于 `App.vue`，`n-dialog-provider` 于 `AppShell`）与主题映射（深色传 `darkTheme`），**不**用 `n-switch` / `n-button` 替换原型自定义组件。
+新颜色 / 圆角 / 字体先加到 `tokens.css`（浅深两套 + 6 色配色都要给），再决定是否暴露到 Tailwind。Naive UI 作容器层（`n-config-provider` + `n-message-provider` 于 `App.vue`，`n-dialog-provider` 于 `AppShell`）与主题映射（深色传 `darkTheme`），**不**用 `n-switch` / `n-button` 替换自定义组件。
 
 ### 主题与配色
 
 `stores/theme.ts`：
 - `mode`（`'light' | 'dark'`）持久化到 `localStorage`（key `devbox-theme`）
-- `color`（`'blue' | 'purple' | 'green' | 'rose' | 'teal'`）持久化到 `localStorage`（key `devbox-color`）
+- `color`（`'blue' | 'purple' | 'green' | 'rose' | 'teal' | 'warm'`）持久化到 `localStorage`（key `devbox-color`）
 - `watch` 同步 `<html data-theme>`/`<html data-color>` 与存储
 - `initTheme()` 在 `main.ts` 的 `app.mount()` 之前同步调用，避免首屏闪烁
 - 设置页 `SettingsView.vue` 用分段按钮切换主题、色环按钮切换配色
