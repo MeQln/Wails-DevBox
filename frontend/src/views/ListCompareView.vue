@@ -4,51 +4,28 @@
       <h1>文本比对工具</h1>
     </header>
 
-    <div class="section-title"><span>配置</span></div>
-    <div class="config">
-      <div class="row">
-        <span class="row-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 9h6v6H9z" />
-          </svg>
-        </span>
-        <div>
-          <div class="row-title">比对粒度</div>
-          <div class="row-desc">逐行比对 / 全文逐字比对</div>
-        </div>
-        <Switch v-model="charLevel" on-label="逐字" off-label="逐行" />
-      </div>
-
-      <div class="row">
-        <span class="row-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </span>
-        <div>
-          <div class="row-title">选项</div>
-          <div class="row-desc">比较规则设置</div>
-        </div>
-        <div class="opts-group">
-          <label class="opt-label"><input type="checkbox" v-model="ignoreCase" /> 忽略大小写</label>
-          <label class="opt-label"><input type="checkbox" v-model="ignoreSpace" /> 忽略空白</label>
-        </div>
-      </div>
-    </div>
-
     <div class="section-title">
       <span>原文 A</span>
       <div class="section-actions">
-        <PillBtn icon-only title="粘贴" @click="() => pasteInto('a')">
+        <PillBtn title="粘贴" @click="() => pasteInto('a')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="3" width="6" height="4" rx="1" />
             <path d="M9 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-3" />
           </svg>
+          粘贴
         </PillBtn>
-        <PillBtn icon-only title="清空" @click="clearInput('a')">
+        <PillBtn title="复制" @click="copyInput('a')" :disabled="!inputA">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" />
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+          </svg>
+          复制
+        </PillBtn>
+        <PillBtn title="清空" @click="clearInput('a')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M6 6l12 12M18 6L6 18" />
           </svg>
+          清空
         </PillBtn>
       </div>
     </div>
@@ -57,16 +34,25 @@
     <div class="section-title">
       <span>原文 B</span>
       <div class="section-actions">
-        <PillBtn icon-only title="粘贴" @click="() => pasteInto('b')">
+        <PillBtn title="粘贴" @click="() => pasteInto('b')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="3" width="6" height="4" rx="1" />
             <path d="M9 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-3" />
           </svg>
+          粘贴
         </PillBtn>
-        <PillBtn icon-only title="清空" @click="clearInput('b')">
+        <PillBtn title="复制" @click="copyInput('b')" :disabled="!inputB">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" />
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+          </svg>
+          复制
+        </PillBtn>
+        <PillBtn title="清空" @click="clearInput('b')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M6 6l12 12M18 6L6 18" />
           </svg>
+          清空
         </PillBtn>
       </div>
     </div>
@@ -80,11 +66,12 @@
             <path d="M7 16l-4-4 4-4" /><path d="M3 12h18" /><path d="M17 8l4 4-4 4" />
           </svg>
         </button>
-        <PillBtn icon-only title="复制结果" @click="copyDiff">
+        <PillBtn title="复制结果" @click="copyDiff">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="9" width="13" height="13" rx="2" />
             <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
           </svg>
+          复制结果
         </PillBtn>
       </div>
     </div>
@@ -115,7 +102,6 @@
 import { ref, computed } from 'vue'
 import { useMessage } from 'naive-ui'
 import PillBtn from '@/components/ui/PillBtn.vue'
-import Switch from '@/components/ui/Switch.vue'
 import { clipboardApi } from '@/api/clipboard'
 
 type DiffType = 'same' | 'add' | 'remove'
@@ -130,9 +116,6 @@ type DiffLine = {
 
 const inputA     = ref('')
 const inputB     = ref('')
-const charLevel  = ref(false)
-const ignoreCase = ref(false)
-const ignoreSpace = ref(false)
 
 const message = useMessage()
 
@@ -162,40 +145,11 @@ function lcs<T>(a: T[], b: T[], equal: (x: T, y: T) => boolean): { type: 'same' 
   return result.reverse()
 }
 
-/** 规范化文本（忽略大小写/空白） */
-function norm(s: string): string {
-  let t = s
-  if (ignoreSpace.value) t = t.replace(/\s+/g, ' ')
-  if (ignoreCase.value) t = t.toLowerCase()
-  return t
-}
-
-/** 字符级 diff（全文逐字比对） */
-function charDiff(stra: string, strb: string): DiffLine[] {
-  const charsA = [...stra]
-  const charsB = [...strb]
-  const equal = (x: string, y: string) => norm(x) === norm(y)
-  const diffs = lcs(charsA, charsB, equal)
-  const lines: DiffLine[] = []
-  let cur: { type: string; text: string } | null = null
-  for (const d of diffs) {
-    if (cur && cur.type === d.type) {
-      cur.text += d.val
-    } else {
-      if (cur) lines.push({ type: cur.type as DiffType, text: cur.text, ln: '', segments: undefined })
-      cur = { type: d.type, text: d.val as string }
-    }
-  }
-  if (cur) lines.push({ type: cur.type as DiffType, text: cur.text, ln: '', segments: undefined })
-  return lines
-}
-
 /** 字符级 diff 分段（行内高亮用） */
-
 function charSegments(textA: string, textB: string): DiffSegment[] {
   const charsA = [...textA]
   const charsB = [...textB]
-  const diffs = lcs(charsA, charsB, (x, y) => norm(x) === norm(y))
+  const diffs = lcs(charsA, charsB, (x, y) => x === y)
   const merged: DiffSegment[] = []
   for (const d of diffs) {
     const prev = merged[merged.length - 1]
@@ -229,7 +183,7 @@ function injectIntraLineSegments(lines: DiffLine[]): void {
 /** 行级 diff */
 
 function lineDiff(a: string[], b: string[]): DiffLine[] {
-  const raw = lcs(a, b, (x, y) => norm(x) === norm(y))
+  const raw = lcs(a, b, (x, y) => x === y)
   const result: DiffLine[] = []
   let la = 1, lb = 1
   for (const d of raw) {
@@ -251,7 +205,6 @@ const diff = computed<DiffLine[]>(() => {
   const a = inputA.value
   const b = inputB.value
   if (!a && !b) return []
-  if (charLevel.value) return charDiff(a, b)
   return lineDiff(a.split('\n'), b.split('\n'))
 })
 
@@ -262,6 +215,15 @@ const sameHint = computed(() => {
 })
 
 /** 交互函数 */
+
+async function copyInput(side: 'a' | 'b') {
+  try {
+    await clipboardApi.write(side === 'a' ? inputA.value : inputB.value)
+    message.success('已复制')
+  } catch {
+    message.error('复制失败')
+  }
+}
 
 async function pasteInto(side: 'a' | 'b') {
   try {
@@ -312,14 +274,6 @@ async function copyDiff() {
 .swap-btn:hover { color: var(--ink); border-color: var(--aside-3); }
 .swap-btn svg { width: 16px; height: 16px; }
 
-.opts-group { display: flex; gap: 12px; align-items: center; }
-.opt-label {
-  display: flex; align-items: center; gap: 4px;
-  font-size: 13px; color: var(--ink-2); cursor: pointer;
-}
-.opt-label input { accent-color: var(--accent); }
-
-/* 比对结果区域 — flex-1 填充剩余空间，随窗口调整 */
 .diff-hint {
   flex: 1; min-height: 0; overflow: auto;
   padding: 24px; text-align: center;
