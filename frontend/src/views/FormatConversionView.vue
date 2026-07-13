@@ -149,54 +149,17 @@ async function convert() {
   font-family: var(--serif); font-size: 28px; font-weight: 500; letter-spacing: -0.015em;
 }
 
-.progress-bar {
-  position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 10;
-  background: linear-gradient(90deg, var(--accent) 30%, transparent 30%);
-  background-size: 200% 100%;
-  animation: progress 1.2s ease infinite;
-  border-radius: 0 0 2px 2px;
-}
-@keyframes progress {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.section-title {
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: 13.5px; font-weight: 500; color: var(--ink-2); margin: 6px 0 4px;
-}
-.section-actions { display: flex; gap: 4px; }
-
-.config {
-  background: color-mix(in srgb, var(--aside-2) 6%, var(--card-2));
-  border: 1px solid var(--border-accent); border-radius: var(--r-md); padding: 6px;
-  display: flex; flex-direction: column; gap: 4px;
-}
-.row {
-  background: var(--card-2); border-radius: 8px; padding: 14px 16px;
-  min-height: 64px; display: grid; grid-template-columns: 44px 1fr auto;
-  align-items: center; gap: 12px; box-shadow: 0 1px 0 rgba(0,0,0,0.02);
-}
+.section-title { margin: 6px 0 4px; }
 .file-row {
   grid-template-columns: 44px 1fr auto;
   padding: 8px 16px; min-height: auto;
 }
-.row-icon {
-  width: 22px; height: 22px; display: inline-flex;
-  align-items: center; justify-content: center; color: var(--ink-2);
-}
-.row-icon :deep(svg) { width: 18px; height: 18px; }
-.row-title { font-size: 14px; font-weight: 500; }
-.row-desc { font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
 
 .file-path { font-size: 13px; color: var(--ink); font-family: var(--mono); }
 .file-meta { font-size: 12px; color: var(--ink-3); }
 
 .fmt-group { display: flex; gap: 4px; }
 .fmt-group .btn { min-width: 52px; padding: 5px 8px; }
-.fmt-group .btn-active {
-  background: var(--accent); color: #fff; border-color: var(--accent);
-}
 
 .preview-wrap { flex: 1; min-height: 0; }
 .preview-box {
@@ -215,14 +178,4 @@ async function convert() {
 .bar-msg { font-size: 13px; color: var(--ink-3); flex: 1; }
 .bar-err { color: var(--warn); }
 
-.btn {
-  padding: 7px 16px; border: 1px solid var(--border-accent); border-radius: var(--r-md);
-  background: transparent; color: var(--ink); cursor: pointer; font-size: 13px; white-space: nowrap;
-}
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn:not(:disabled):hover { background: color-mix(in srgb, var(--aside-2) 10%, transparent); }
-.btn-primary {
-  background: var(--accent); color: #fff; border-color: var(--accent);
-}
-.btn-primary:not(:disabled):hover { opacity: 0.85; }
 </style>

@@ -9,35 +9,29 @@
       <div class="row">
         <span class="row-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 6h16M4 12h16M4 18h16" />
+            <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 9h6v6H9z" />
           </svg>
         </span>
         <div>
           <div class="row-title">比对粒度</div>
-          <div class="row-desc">逐行比对（标记行内差异字符）或全文逐字符比对</div>
+          <div class="row-desc">逐行比对 / 全文逐字比对</div>
         </div>
-        <Switch v-model="charLevel" on-label="全文逐字" off-label="逐行" />
+        <Switch v-model="charLevel" on-label="逐字" off-label="逐行" />
       </div>
 
       <div class="row">
         <span class="row-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 3v18" /><path d="M3 12h18" />
+            <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </span>
         <div>
           <div class="row-title">选项</div>
-          <div class="row-desc">对比时的处理规则</div>
+          <div class="row-desc">比较规则设置</div>
         </div>
-        <div class="opt-group">
-          <label class="opt-label">
-            <input type="checkbox" v-model="ignoreCase" class="opt-cb" />
-            <span>忽略大小写</span>
-          </label>
-          <label class="opt-label">
-            <input type="checkbox" v-model="ignoreSpace" class="opt-cb" />
-            <span>忽略空白</span>
-          </label>
+        <div class="opts-group">
+          <label class="opt-label"><input type="checkbox" v-model="ignoreCase" /> 忽略大小写</label>
+          <label class="opt-label"><input type="checkbox" v-model="ignoreSpace" /> 忽略空白</label>
         </div>
       </div>
     </div>
@@ -58,7 +52,7 @@
         </PillBtn>
       </div>
     </div>
-    <CodeArea v-model="inputA" class="input-area" />
+    <textarea v-model="inputA" class="text-area" placeholder="在此输入文本 A" autocorrect="off" spellcheck="false" autocapitalize="off"></textarea>
 
     <div class="section-title">
       <span>原文 B</span>
@@ -76,7 +70,7 @@
         </PillBtn>
       </div>
     </div>
-    <CodeArea v-model="inputB" class="input-area" />
+    <textarea v-model="inputB" class="text-area" placeholder="在此输入文本 B" autocorrect="off" spellcheck="false" autocapitalize="off"></textarea>
 
     <div class="section-title">
       <span>比对结果</span>
@@ -102,7 +96,7 @@
     </div>
     <div v-else class="diff-wrap">
       <div v-for="(d, i) in diff" :key="i" :class="['diff-line', `diff-${d.type}`]">
-        <span v-if="d.ln" class="diff-ln">{{ d.ln }}</span>
+        <span class="diff-ln">{{ d.ln }}</span>
         <span class="diff-marker">{{ d.type === 'same' ? ' ' : d.type === 'add' ? '+' : '-' }}</span>
         <span v-if="d.segments" class="diff-text">
           <template v-for="(seg, si) in d.segments" :key="si">
@@ -122,7 +116,6 @@ import { ref, computed } from 'vue'
 import { useMessage } from 'naive-ui'
 import PillBtn from '@/components/ui/PillBtn.vue'
 import Switch from '@/components/ui/Switch.vue'
-import CodeArea from '@/components/ui/CodeArea.vue'
 import { clipboardApi } from '@/api/clipboard'
 
 type DiffType = 'same' | 'add' | 'remove'
@@ -142,13 +135,6 @@ const ignoreCase = ref(false)
 const ignoreSpace = ref(false)
 
 const message = useMessage()
-
-function norm(s: string): string {
-  let r = s
-  if (ignoreCase.value) r = r.toLowerCase()
-  if (ignoreSpace.value) r = r.replace(/\s+/g, ' ').trim()
-  return r
-}
 
 /** LCS 核心 */
 
@@ -176,13 +162,40 @@ function lcs<T>(a: T[], b: T[], equal: (x: T, y: T) => boolean): { type: 'same' 
   return result.reverse()
 }
 
+/** 规范化文本（忽略大小写/空白） */
+function norm(s: string): string {
+  let t = s
+  if (ignoreSpace.value) t = t.replace(/\s+/g, ' ')
+  if (ignoreCase.value) t = t.toLowerCase()
+  return t
+}
+
+/** 字符级 diff（全文逐字比对） */
+function charDiff(stra: string, strb: string): DiffLine[] {
+  const charsA = [...stra]
+  const charsB = [...strb]
+  const equal = (x: string, y: string) => norm(x) === norm(y)
+  const diffs = lcs(charsA, charsB, equal)
+  const lines: DiffLine[] = []
+  let cur: { type: string; text: string } | null = null
+  for (const d of diffs) {
+    if (cur && cur.type === d.type) {
+      cur.text += d.val
+    } else {
+      if (cur) lines.push({ type: cur.type as DiffType, text: cur.text, ln: '', segments: undefined })
+      cur = { type: d.type, text: d.val as string }
+    }
+  }
+  if (cur) lines.push({ type: cur.type as DiffType, text: cur.text, ln: '', segments: undefined })
+  return lines
+}
+
 /** 字符级 diff 分段（行内高亮用） */
 
 function charSegments(textA: string, textB: string): DiffSegment[] {
   const charsA = [...textA]
   const charsB = [...textB]
-  const equal = (x: string, y: string) => norm(x) === norm(y)
-  const diffs = lcs(charsA, charsB, equal)
+  const diffs = lcs(charsA, charsB, (x, y) => norm(x) === norm(y))
   const merged: DiffSegment[] = []
   for (const d of diffs) {
     const prev = merged[merged.length - 1]
@@ -216,8 +229,7 @@ function injectIntraLineSegments(lines: DiffLine[]): void {
 /** 行级 diff */
 
 function lineDiff(a: string[], b: string[]): DiffLine[] {
-  const equal = (x: string, y: string) => norm(x) === norm(y)
-  const raw = lcs(a, b, equal)
+  const raw = lcs(a, b, (x, y) => norm(x) === norm(y))
   const result: DiffLine[] = []
   let la = 1, lb = 1
   for (const d of raw) {
@@ -231,25 +243,6 @@ function lineDiff(a: string[], b: string[]): DiffLine[] {
   }
   injectIntraLineSegments(result)
   return result
-}
-
-/** 全文逐字符 diff */
-
-function charDiff(stra: string, strb: string): DiffLine[] {
-  const charsA = [...stra]
-  const charsB = [...strb]
-  const equal = (x: string, y: string) => norm(x) === norm(y)
-  const raw = lcs(charsA, charsB, equal)
-  const merged: { type: DiffType; text: string }[] = []
-  for (const d of raw) {
-    const prev = merged[merged.length - 1]
-    if (prev && prev.type === d.type) {
-      prev.text += d.val
-    } else {
-      merged.push({ type: d.type as DiffType, text: d.val as string })
-    }
-  }
-  return merged.map(d => ({ type: d.type, text: d.text, ln: '' }))
 }
 
 /** 计算属性 */
@@ -306,63 +299,8 @@ async function copyDiff() {
 </script>
 
 <style scoped>
-.page-head {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  margin-bottom: 18px;
-}
-.page-head h1 {
-  font-family: var(--serif);
-  font-size: 28px; font-weight: 500;
-  letter-spacing: -0.015em;
-}
-
-.section-title {
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: 13.5px; font-weight: 500;
-  color: var(--ink-2);
-  margin: 12px 0 8px;
-}
-.section-actions { display: flex; gap: 4px; align-items: center; }
-
-.config {
-  background: color-mix(in srgb, var(--aside-2) 6%, var(--card-2));
-  border: 1px solid var(--border-accent);
-  border-radius: var(--r-md);
-  padding: 6px;
-  display: flex; flex-direction: column; gap: 4px;
-}
-.row {
-  background: var(--card-2);
-  border-radius: 8px;
-  padding: 14px 16px;
-  min-height: 64px;
-  display: grid; grid-template-columns: 44px 1fr auto;
-  align-items: center; gap: 12px;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
-}
-.row-icon {
-  width: 22px; height: 22px;
-  display: inline-flex; align-items: center; justify-content: center;
-  color: var(--ink-2);
-}
-.row-icon :deep(svg) { width: 18px; height: 18px; }
-.row-title { font-size: 14px; font-weight: 500; }
-.row-desc { font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
-
-.opt-group {
-  display: flex; gap: 12px; align-items: center;
-}
-.opt-label {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 12.5px; color: var(--ink-2); cursor: pointer;
-}
-.opt-cb { accent-color: var(--aside-3); }
-
-.input-area {
-  height: 130px;
-  min-height: 130px;
-  max-height: 130px;
-  overflow-y: auto !important;
+.text-area {
+  height: 130px; min-height: 130px; max-height: 130px;
   flex-shrink: 0;
 }
 
@@ -373,6 +311,13 @@ async function copyDiff() {
 }
 .swap-btn:hover { color: var(--ink); border-color: var(--aside-3); }
 .swap-btn svg { width: 16px; height: 16px; }
+
+.opts-group { display: flex; gap: 12px; align-items: center; }
+.opt-label {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 13px; color: var(--ink-2); cursor: pointer;
+}
+.opt-label input { accent-color: var(--accent); }
 
 /* 比对结果区域 — flex-1 填充剩余空间，随窗口调整 */
 .diff-hint {

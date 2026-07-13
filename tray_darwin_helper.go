@@ -27,7 +27,7 @@ void start_tray(const unsigned char* data, int len, const char* tooltip) {
 			[item retain];
 
 			// 设置图标
-			NSData* imgData = [NSData dataWithBytesNoCopy:(void*)data length:len freeWhenDone:NO];
+			NSData* imgData = [NSData dataWithBytes:(void*)data length:len];
 			NSImage* img = [[NSImage alloc] initWithData:imgData];
 			[img setSize:NSMakeSize(18, 18)];
 			item.button.image = img;

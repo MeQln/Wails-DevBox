@@ -8,7 +8,6 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
-	"strconv"
 	"strings"
 
 	qrcode "github.com/skip2/go-qrcode"
@@ -35,19 +34,15 @@ func (a *App) QrEncode(text string) (string, error) {
 }
 
 // qrToSVG 把含 quiet zone 的模块矩阵渲染为 SVG markup。
+// 不设置固定颜色：背景透明，模块使用 currentColor 以继承主题文本色。
 func qrToSVG(bitmap [][]bool) string {
 	n := len(bitmap)
 	var b strings.Builder
 	fmt.Fprintf(&b, `<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d" shape-rendering="crispEdges">`, n, n, n, n)
-	b.WriteString(`<rect x="0" y="0" width="`)
-	b.WriteString(strconv.Itoa(n))
-	b.WriteString(`" height="`)
-	b.WriteString(strconv.Itoa(n))
-	b.WriteString(`" fill="#ffffff"/>`)
 	for i, row := range bitmap {
 		for j, v := range row {
 			if v {
-				fmt.Fprintf(&b, `<rect x="%d" y="%d" width="1" height="1" fill="#000000"/>`, j, i)
+				fmt.Fprintf(&b, `<rect x="%d" y="%d" width="1" height="1" fill="currentColor"/>`, j, i)
 			}
 		}
 	}

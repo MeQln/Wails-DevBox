@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <textarea v-model="input" class="text-area" placeholder="在此输入要生成二维码的文本"></textarea>
+      <textarea v-model="input" class="text-area" placeholder="在此输入要生成二维码的文本" autocorrect="off" spellcheck="false" autocapitalize="off"></textarea>
     </div>
 
     <!-- 右列 -->
@@ -229,16 +229,6 @@ function clearInput() {
 </script>
 
 <style scoped>
-.page-head {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  margin-bottom: 18px;
-}
-.page-head h1 {
-  font-family: var(--serif);
-  font-size: 28px; font-weight: 500;
-  letter-spacing: -0.015em;
-}
-
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -249,26 +239,6 @@ function clearInput() {
   display: flex; flex-direction: column;
   min-height: 0; gap: 12px;
 }
-
-.section-title {
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: 13.5px; font-weight: 500; color: var(--ink-2);
-}
-.section-actions { display: flex; gap: 4px; align-items: center; }
-
-.text-area {
-  flex: 1;
-  min-height: 200px;
-  padding: 12px 14px;
-  font-family: var(--mono, 'SF Mono', Menlo, Consolas, monospace);
-  font-size: 13.5px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  resize: none; outline: none;
-  color: var(--ink-1);
-}
-.text-area:focus { border-color: var(--accent, #5b8cff); }
 
 .dropzone {
   border: 2px dashed var(--rule);
@@ -285,7 +255,8 @@ function clearInput() {
 
 .preview {
   flex: 1;
-  background: var(--card);
+  background: transparent;
+  border: 1px solid var(--border-accent);
   border-radius: var(--r-md);
   padding: 14px 16px;
   display: flex; flex-direction: column; min-height: 0;

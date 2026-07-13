@@ -122,31 +122,18 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .ws-view { display: flex; flex-direction: column; gap: 12px; height: 100%; }
-.page-head h1 { font-family: var(--serif); font-size: 28px; font-weight: 500; letter-spacing: -0.015em; }
 .bar { display: flex; align-items: center; gap: 10px; }
 .bar .btn { min-width: 88px; }
 .send { display: flex; align-items: center; gap: 10px; }
 .send .btn + .btn { margin-left: 8px; }
-.input {
-  flex: 1; padding: 7px 12px; border: 1px solid var(--rule); border-radius: var(--r-md);
-  background: var(--card-2); color: var(--ink); font-size: 13px;
-}
-.input:focus { outline: none; border-color: var(--link); }
-.input:disabled { opacity: 0.5; }
-.btn {
-  padding: 7px 16px; border: 1px solid var(--rule); border-radius: var(--r-md);
-  background: var(--card-2); color: var(--ink); cursor: pointer; font-size: 13px; white-space: nowrap;
-}
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn:not(:disabled):hover { background: var(--card); }
-.btn-danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
+.input { flex: 1; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dot-on { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 15%, transparent); }
 .dot-off { background: var(--ink-5); }
 .state { font-size: 12.5px; color: var(--ink-3); min-width: 56px; }
 .log-wrap {
-  flex: 1; min-height: 0; border: 1px solid var(--rule); border-radius: var(--r-md);
-  background: var(--card-2); overflow: hidden;
+  flex: 1; min-height: 0; border: 1px solid var(--border-accent); border-radius: var(--r-md);
+  background: transparent; overflow: hidden;
 }
 .log { height: 100%; overflow: auto; padding: 8px 0; font-family: var(--mono); font-size: 12.5px; }
 .line { display: flex; gap: 8px; padding: 4px 14px; align-items: baseline; }

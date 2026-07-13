@@ -81,51 +81,12 @@ const colorOptions: { value: ThemeColor; label: string; swatch: string }[] = [
   { value: 'green', label: '绿色', swatch: '#6cb86c' },
   { value: 'rose', label: '玫瑰色', swatch: '#e88a8a' },
   { value: 'teal', label: '青色', swatch: '#5cb8b8' },
+  { value: 'warm', label: '暖色', swatch: '#d4a040' },
 ]
 </script>
 
 <style scoped>
-.page-head {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  margin-bottom: 18px;
-}
-.page-head h1 {
-  font-family: var(--serif);
-  font-size: 28px; font-weight: 500;
-  letter-spacing: -0.015em;
-}
-
-.section-title {
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: 13.5px; font-weight: 500;
-  color: var(--ink-2);
-  margin: 12px 0 8px;
-}
-
-.config {
-  background: transparent;
-  border-radius: var(--r-md);
-  padding: 6px;
-  display: flex; flex-direction: column; gap: 4px;
-}
-.row {
-  background: transparent;
-  border: 1px solid var(--border-accent);
-  border-radius: 8px;
-  padding: 14px 16px;
-  min-height: 64px;
-  display: grid; grid-template-columns: 44px 1fr auto;
-  align-items: center; gap: 12px;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
-}
-.row-icon {
-  width: 22px; height: 22px;
-  display: inline-flex; align-items: center; justify-content: center;
-  color: var(--ink-2);
-}
-.row-icon :deep(svg) { width: 18px; height: 18px; }
-.row-title { font-size: 14px; font-weight: 500; }
-.row-desc { font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
+.page-head { margin-bottom: 18px; }
 
 .segmented {
   display: inline-flex;

@@ -5,11 +5,11 @@
       <div class="port-toolbar">
         <input
           v-model="search"
-          class="port-search"
+          class="port-search input"
           type="text"
           placeholder="搜索端口 / PID / 进程名"
         />
-        <button class="port-refresh" :disabled="loading" @click="load">
+        <button class="btn" :disabled="loading" @click="load">
           {{ loading ? '刷新中…' : '刷新' }}
         </button>
       </div>
@@ -152,38 +152,13 @@ onMounted(load)
   display: flex;
   gap: 8px;
 }
-.port-search {
-  padding: 6px 10px;
-  border: 1px solid var(--rule);
-  border-radius: var(--r-md);
-  font-size: 13px;
-  width: 220px;
-  background: var(--card-2);
-  color: var(--ink);
-}
-.port-search:focus {
-  outline: none;
-  border-color: var(--link);
-}
-.port-refresh {
-  padding: 6px 14px;
-  border: 1px solid var(--rule);
-  border-radius: var(--r-md);
-  background: var(--card-2);
-  color: var(--ink);
-  cursor: pointer;
-  font-size: 13px;
-}
-.port-refresh:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.port-search { width: 220px; }
 .port-table-wrap {
   flex: 1;
   overflow: auto;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--border-accent);
   border-radius: var(--r-md);
-  background: var(--card-2);
+  background: transparent;
 }
 .port-table {
   width: 100%;
@@ -194,13 +169,13 @@ onMounted(load)
 .port-table td {
   padding: 8px 12px;
   text-align: left;
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 1px solid var(--border-accent);
   color: var(--ink);
 }
 .port-table th {
   position: sticky;
   top: 0;
-  background: var(--card);
+  background: transparent;
   font-weight: 600;
   user-select: none;
 }
@@ -219,7 +194,7 @@ onMounted(load)
 }
 .port-kill {
   padding: 4px 12px;
-  border: 1px solid var(--rule);
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
   border-radius: var(--r-sm);
   background: transparent;
   color: var(--danger);
@@ -227,7 +202,7 @@ onMounted(load)
   font-size: 12px;
 }
 .port-kill:hover {
-  background: var(--card);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 .port-empty {
   display: flex;

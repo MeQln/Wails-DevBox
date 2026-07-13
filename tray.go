@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"os"
-
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type trayAction int
@@ -22,23 +20,10 @@ var actionCh = make(chan trayAction, 8)
 // 在 App.startup 中调用；由平台文件（tray_darwin.go / tray_windows.go）提供具体实现。
 func (a *App) initTray(ctx context.Context) {
 	iconData, err := os.ReadFile("build/appicon.png")
-	if err != nil {
+	if err != nil || len(iconData) == 0 {
 		return
 	}
 
 	startTray(iconData, "DevBox · 开发工具箱")
-
-	go func() {
-		for act := range actionCh {
-			switch act {
-			case actionShow:
-				runtime.WindowShow(ctx)
-			case actionHide:
-				runtime.WindowHide(ctx)
-			case actionQuit:
-				runtime.Quit(ctx)
-				os.Exit(0)
-			}
-		}
-	}()
+	startTrayActionHandler(ctx)
 }

@@ -11,4 +11,5 @@ docs/superpowers/
 .pnpm-store/
 # go build 副产物（根目录二进制）
 /DevBox
+.playwright-mcp/
 # wails build 从 build/appicon.png 自动生成的平台图标
