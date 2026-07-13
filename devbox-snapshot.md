@@ -1,0 +1,90 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - textbox "搜索工具" [ref=e11]
+    - navigation [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14] [cursor=pointer]: 系统工具
+        - generic [ref=e23] [cursor=pointer]:
+          - generic [ref=e24]: ⚓
+          - generic [ref=e25]: 端口管理
+      - generic [ref=e26]:
+        - generic [ref=e27] [cursor=pointer]: 编解码器
+        - generic [ref=e35]:
+          - generic [ref=e36] [cursor=pointer]:
+            - generic [ref=e37]: QR
+            - generic [ref=e38]: 二维码
+          - generic [ref=e39] [cursor=pointer]: URL
+          - generic [ref=e45] [cursor=pointer]:
+            - generic [ref=e46]: B图
+            - generic [ref=e47]: Base64图片
+          - generic [ref=e48] [cursor=pointer]:
+            - generic [ref=e49]: B文
+            - generic [ref=e50]: Base64文本
+      - generic [ref=e51]:
+        - generic [ref=e52] [cursor=pointer]: 格式化工具
+        - generic [ref=e58]:
+          - generic [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]: "{;}"
+            - generic [ref=e61]: JSON
+          - generic [ref=e62] [cursor=pointer]:
+            - generic [ref=e63]: SQ
+            - generic [ref=e64]: SQL
+          - generic [ref=e65] [cursor=pointer]:
+            - generic [ref=e66]: XM
+            - generic [ref=e67]: XML
+      - generic [ref=e68]:
+        - generic [ref=e69] [cursor=pointer]: 测试工具
+        - generic [ref=e76]:
+          - generic [ref=e77] [cursor=pointer]: 连通性测试
+          - generic [ref=e81] [cursor=pointer]: WebSocket
+      - generic [ref=e89]:
+        - generic [ref=e90] [cursor=pointer]: 生成器
+        - generic [ref=e97]:
+          - generic [ref=e98] [cursor=pointer]: 哈希 / 校验
+          - generic [ref=e104] [cursor=pointer]: 密码
+          - generic [ref=e111] [cursor=pointer]: UUID
+      - generic [ref=e123]:
+        - generic [ref=e124] [cursor=pointer]: 图像处理
+        - generic [ref=e133]:
+          - generic [ref=e134] [cursor=pointer]:
+            - generic [ref=e135]: Fmt
+            - generic [ref=e136]: 格式转换
+          - generic [ref=e137] [cursor=pointer]:
+            - generic [ref=e138]: Cmp
+            - generic [ref=e139]: 图片压缩
+      - generic [ref=e140]:
+        - generic [ref=e141] [cursor=pointer]: 文本处理
+        - generic [ref=e148]:
+          - generic [ref=e149] [cursor=pointer]:
+            - generic [ref=e150]: TX
+            - generic [ref=e151]: 转义 / 反转义
+          - generic [ref=e152] [cursor=pointer]:
+            - generic [ref=e153]: ≡
+            - generic [ref=e154]: 文本比对
+          - generic [ref=e155] [cursor=pointer]:
+            - generic [ref=e156]: MD
+            - generic [ref=e157]: Markdown 预览
+    - generic [ref=e159] [cursor=pointer]:
+      - generic [ref=e160]: ☰
+      - generic [ref=e161]: 设置
+  - main [ref=e162]:
+    - heading "二维码编 / 解码工具" [level=1] [ref=e181]
+    - generic [ref=e182]:
+      - generic [ref=e183]:
+        - generic [ref=e184]:
+          - generic [ref=e185]: 文本
+          - generic [ref=e186]:
+            - button "复制" [ref=e187] [cursor=pointer]
+            - button "粘贴" [ref=e191] [cursor=pointer]
+            - button "读取文件" [ref=e195] [cursor=pointer]
+            - button "保存为图片" [disabled]
+            - button "清空" [ref=e199] [cursor=pointer]
+        - textbox "在此输入要生成二维码的文本" [ref=e202]
+      - generic [ref=e203]:
+        - generic [ref=e204]:
+          - paragraph [ref=e205]: 将任意一个 BMP, GIF, JPEG, JPG, PBM, PNG, TGA, TIF, TIFF, WEBP 文件拖放到此处
+          - paragraph [ref=e206]: 或者
+          - paragraph [ref=e207]: 浏览文件
+        - generic [ref=e208]:
+          - generic [ref=e209]: 二维码
+          - generic [ref=e210]: 输入文本后自动生成二维码

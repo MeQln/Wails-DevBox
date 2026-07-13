@@ -1,0 +1,91 @@
+- generic [ref=f1e4]:
+  - complementary [ref=f1e5]:
+    - textbox "搜索工具" [ref=f1e11]
+    - navigation [ref=f1e12]:
+      - generic [ref=f1e13]:
+        - generic [ref=f1e14] [cursor=pointer]: 系统工具
+        - generic [ref=f1e23] [cursor=pointer]:
+          - generic [ref=f1e24]: ⚓
+          - generic [ref=f1e25]: 端口管理
+      - generic [ref=f1e26]:
+        - generic [ref=f1e27] [cursor=pointer]: 编解码器
+        - generic [ref=f1e35]:
+          - generic [ref=f1e36] [cursor=pointer]:
+            - generic [ref=f1e37]: QR
+            - generic [ref=f1e38]: 二维码
+          - generic [ref=f1e39] [cursor=pointer]: URL
+          - generic [ref=f1e45] [cursor=pointer]:
+            - generic [ref=f1e46]: B图
+            - generic [ref=f1e47]: Base64图片
+          - generic [ref=f1e48] [cursor=pointer]:
+            - generic [ref=f1e49]: B文
+            - generic [ref=f1e50]: Base64文本
+      - generic [ref=f1e51]:
+        - generic [ref=f1e52] [cursor=pointer]: 格式化工具
+        - generic [ref=f1e58]:
+          - generic [ref=f1e59] [cursor=pointer]:
+            - generic [ref=f1e60]: "{;}"
+            - generic [ref=f1e61]: JSON
+          - generic [ref=f1e62] [cursor=pointer]:
+            - generic [ref=f1e63]: SQ
+            - generic [ref=f1e64]: SQL
+          - generic [ref=f1e65] [cursor=pointer]:
+            - generic [ref=f1e66]: XM
+            - generic [ref=f1e67]: XML
+      - generic [ref=f1e68]:
+        - generic [ref=f1e69] [cursor=pointer]: 测试工具
+        - generic [ref=f1e76]:
+          - generic [ref=f1e77] [cursor=pointer]: 连通性测试
+          - generic [ref=f1e81] [cursor=pointer]: WebSocket
+      - generic [ref=f1e89]:
+        - generic [ref=f1e90] [cursor=pointer]: 生成器
+        - generic [ref=f1e97]:
+          - generic [ref=f1e98] [cursor=pointer]: 哈希 / 校验
+          - generic [ref=f1e104] [cursor=pointer]: 密码
+          - generic [ref=f1e111] [cursor=pointer]: UUID
+      - generic [ref=f1e123]:
+        - generic [ref=f1e124] [cursor=pointer]: 图像处理
+        - generic [ref=f1e133]:
+          - generic [ref=f1e134] [cursor=pointer]:
+            - generic [ref=f1e135]: Fmt
+            - generic [ref=f1e136]: 格式转换
+          - generic [ref=f1e137] [cursor=pointer]:
+            - generic [ref=f1e138]: Cmp
+            - generic [ref=f1e139]: 图片压缩
+      - generic [ref=f1e140]:
+        - generic [ref=f1e141] [cursor=pointer]: 文本处理
+        - generic [ref=f1e148]:
+          - generic [ref=f1e149] [cursor=pointer]:
+            - generic [ref=f1e150]: TX
+            - generic [ref=f1e151]: 转义 / 反转义
+          - generic [ref=f1e152] [cursor=pointer]:
+            - generic [ref=f1e153]: ≡
+            - generic [ref=f1e154]: 文本比对
+          - generic [ref=f1e155] [cursor=pointer]:
+            - generic [ref=f1e156]: MD
+            - generic [ref=f1e157]: Markdown 预览
+    - generic [ref=f1e159] [cursor=pointer]:
+      - generic [ref=f1e160]: ☰
+      - generic [ref=f1e161]: 设置
+  - main [ref=f1e162]:
+    - heading "设置" [level=1] [ref=f1e164]
+    - generic [ref=f1e165]: 外观
+    - generic [ref=f1e167]:
+      - generic [ref=f1e168]:
+        - generic [ref=f1e172]:
+          - generic [ref=f1e173]: 主题
+          - generic [ref=f1e174]: 切换应用整体配色，深色模式适合夜间使用
+        - radiogroup "主题" [ref=f1e175]:
+          - radio [checked] [ref=f1e176] [cursor=pointer]
+          - radio [ref=f1e181] [cursor=pointer]
+      - generic [ref=f1e185]:
+        - generic [ref=f1e190]:
+          - generic [ref=f1e191]: 配色
+          - generic [ref=f1e192]: 选择应用的强调色
+        - radiogroup "配色" [ref=f1e193]:
+          - radio "蓝色" [checked] [ref=f1e194] [cursor=pointer]
+          - radio "浅紫色" [ref=f1e195] [cursor=pointer]
+          - radio "绿色" [ref=f1e196] [cursor=pointer]
+          - radio "玫瑰色" [ref=f1e197] [cursor=pointer]
+          - radio "青色" [ref=f1e198] [cursor=pointer]
+          - radio "暖色" [ref=f1e199] [cursor=pointer]
