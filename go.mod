@@ -9,6 +9,8 @@ require (
 	github.com/tuotoo/qrcode v0.0.0-20220425170535-52ccc2bebf5d
 	github.com/wailsapp/wails/v2 v2.12.0
 	golang.org/x/image v0.43.0
+	golang.org/x/sys v0.30.0
+	golang.org/x/text v0.38.0
 )
 
 require (
@@ -39,8 +41,6 @@ require (
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/text v0.38.0 // indirect
 	rsc.io/qr v0.2.0 // indirect
 )
 

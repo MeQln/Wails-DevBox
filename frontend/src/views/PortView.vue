@@ -204,6 +204,14 @@ onMounted(load)
 .port-kill:hover {
   background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
+.port-table-wrap::-webkit-scrollbar { width: 6px; }
+.port-table-wrap::-webkit-scrollbar-track { background: transparent; }
+.port-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--ink-5);
+  border-radius: 3px;
+}
+.port-table-wrap::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }
+
 .port-empty {
   display: flex;
   align-items: center;

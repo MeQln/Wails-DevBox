@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
+
+	"golang.org/x/text/encoding/simplifiedchinese"
 
 	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -43,6 +46,7 @@ func pingArgs(host string) []string {
 // 事件实时推送，返回 ping 退出码是否成功（主机不可达时 false，但不算 Go 侧错误）。
 func (a *App) PingHost(host string) (bool, error) {
 	cmd := exec.Command("ping", pingArgs(host)...)
+	hideWindow(cmd)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return false, err
@@ -52,7 +56,8 @@ func (a *App) PingHost(host string) (bool, error) {
 	}
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
-		wruntime.EventsEmit(a.ctx, "ping:line", PingLine{Host: host, Line: scanner.Text()})
+		line := toUTF8(scanner.Bytes())
+		wruntime.EventsEmit(a.ctx, "ping:line", PingLine{Host: host, Line: line})
 	}
 	if err := cmd.Wait(); err != nil {
 		if _, ok := err.(*exec.ExitError); ok {
@@ -61,6 +66,24 @@ func (a *App) PingHost(host string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+// toUTF8 将原始字节转为 UTF-8 字符串。
+// 如果已经是合法 UTF-8 则直接返回；否则尝试平台相关 OEM 编码解码
+//（Windows 通过 GetOEMCP 获取实际代码页），兜底尝试 GBK。
+func toUTF8(raw []byte) string {
+	if utf8.Valid(raw) {
+		return string(raw)
+	}
+	// 尝试平台相关 OEM 编码解码
+	if decoded := decodeOEM(raw); utf8.Valid(decoded) {
+		return string(decoded)
+	}
+	// 兜底：尝试 GBK（中文 Windows 最常见场景，以及未知 OEM 代码页的保险）
+	if utf8Bytes, err := simplifiedchinese.GBK.NewDecoder().Bytes(raw); err == nil {
+		return string(utf8Bytes)
+	}
+	return string(raw)
 }
 
 // CheckPort 对齐 Tauri net::check_port：3 秒超时内能否完成 TCP 三次握手。

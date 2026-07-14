@@ -20,7 +20,7 @@ func main() {
 		Height:            850,
 		MinWidth:          1150,
 		MinHeight:         850,
-		HideWindowOnClose: true,
+		HideWindowOnClose: false,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

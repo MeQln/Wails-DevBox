@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -62,7 +61,7 @@ func (a *App) KillPort(pid uint32) error {
 		return fmt.Errorf("进程 %d 不存在", pid)
 	}
 	if err := killProcess(pid); err != nil {
-		return errors.New("结束失败")
+		return fmt.Errorf("结束失败：%w", err)
 	}
 	return nil
 }
